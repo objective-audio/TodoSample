@@ -1,5 +1,5 @@
 //
-//  HistoryViewController.swift
+//  TodoViewController.swift
 //  Todo
 //
 //  Created by yasoshima on 2018/06/15.
@@ -8,53 +8,56 @@
 
 import UIKit
 
-class HistoryViewController: UITableViewController {
-    let cellIdentifier: String = "HistoryCell"
+class TodoViewController: UITableViewController {
+    let cellIdentifier: String = "TodoCell"
     let receiver = NotificationReceiver()
     
-    var todoController: TodoController {
-        return AppController.shared.todoController
+    var todos: [TodoItem] {
+        return TodoController.shared.todoItems
     }
-    
-    var histories: [HistoryItem] {
-        return AppController.shared.todoController.historyItems
-    }
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        self.title = "History Items"
+        self.title = "Todo Items"
         
-        self.receiver.add(sender: self.todoController.eventSender) { [weak self] event in
+        self.receiver.add(sender: TodoController.shared.eventSender) { [weak self] event in
             switch event {
-            case .todoItemAdded:
-                break
-            case .todoItemRemoved:
-                break
-            case .historyItemAdded(let index):
+            case .todoItemAdded(let index):
                 self?.addCell(at: index)
+            case .todoItemRemoved(let index):
+                self?.removeCell(at: index)
+            case .historyItemAdded:
                 break
             }
         }
     }
-
+    
     override func numberOfSections(in tableView: UITableView) -> Int {
         return 1
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return self.histories.count
+        return self.todos.count
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: self.cellIdentifier, for: indexPath)
-        cell.textLabel?.text = self.histories[indexPath.row].name
+        cell.textLabel?.text = self.todos[indexPath.row].name
         return cell
+    }
+    
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        TodoController.shared.completeTodoItem(at: indexPath.row)
     }
 }
 
-extension HistoryViewController {
+extension TodoViewController {
     func addCell(at row: Int) {
         self.tableView.insertRows(at: [IndexPath(row: row, section: 0)], with: .automatic)
+    }
+    
+    func removeCell(at row: Int) {
+        self.tableView.deleteRows(at: [IndexPath(row: row, section: 0)], with: .automatic)
     }
 }

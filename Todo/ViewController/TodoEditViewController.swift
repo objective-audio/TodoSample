@@ -11,10 +11,6 @@ import UIKit
 class TodoEditViewController: UIViewController {
     @IBOutlet var nameTextField: UITextField!
     
-    var todoController: TodoController {
-        return AppController.shared.todoController
-    }
-    
     override func viewDidLoad() {
         super.viewDidLoad()
     }
@@ -27,7 +23,7 @@ class TodoEditViewController: UIViewController {
     
     @IBAction func done(sender: UIBarButtonItem) {
         if let name = self.nameTextField.text, !name.isEmpty {
-            self.todoController.addTodoItem(name: name)
+            TodoController.shared.addTodoItem(name: name)
             self.dismiss(animated: true, completion: nil)
         }
     }

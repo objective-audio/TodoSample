@@ -9,6 +9,8 @@
 import Foundation
 
 class TodoController {
+    static let shared = TodoController()
+    
     private(set) var todoItems: [TodoItem]
     private(set) var historyItems: [HistoryItem]
     private let dataStore: DataStore
