@@ -99,7 +99,7 @@
                                 <action selector="cancelWithSender:" destination="zLu-Za-izH" id="230-zV-gok"/>
                             </connections>
                         </barButtonItem>
-                        <barButtonItem key="rightBarButtonItem" systemItem="add" id="9Ze-vi-p91">
+                        <barButtonItem key="rightBarButtonItem" systemItem="done" id="9Ze-vi-p91">
                             <connections>
                                 <action selector="doneWithSender:" destination="zLu-Za-izH" id="blH-ja-rDU"/>
                             </connections>
