@@ -48,7 +48,20 @@ class TodoViewController: UITableViewController {
     }
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        TodoController.shared.completeTodoItem(at: indexPath.row)
+    }
+    
+    override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
+        return true
+    }
+    
+    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
+        switch editingStyle {
+        case .delete:
+            TodoController.shared.deleteTodoItem(at: indexPath.row)
+            break
+        default:
+            break
+        }
     }
 }
 

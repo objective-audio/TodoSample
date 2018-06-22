@@ -46,7 +46,7 @@ class TodoController {
         self.eventSender.post(context: .todoItemAdded(at: 0))
     }
     
-    func completeTodoItem(at index: Int) {
+    func deleteTodoItem(at index: Int) {
         let removed = self.todoItems.remove(at: index)
         self.historyItems = [HistoryItem(name: removed.name, createdAt: removed.createdAt, completedAt: Date())] + self.historyItems
         
