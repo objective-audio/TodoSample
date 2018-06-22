@@ -12,7 +12,7 @@ class TodoViewController: UITableViewController {
     let cellIdentifier: String = "TodoCell"
     let receiver = NotificationReceiver()
     
-    var todos: [TodoItem] {
+    var todoItems: [TodoItem] {
         return TodoController.shared.todoItems
     }
 
@@ -38,12 +38,15 @@ class TodoViewController: UITableViewController {
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return self.todos.count
+        return self.todoItems.count
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: self.cellIdentifier, for: indexPath)
-        cell.textLabel?.text = self.todos[indexPath.row].name
+        let todoItem = self.todoItems[indexPath.row]
+        cell.textLabel?.text = todoItem.name
+        cell.selectionStyle = todoItem.isCompleted ? .none : .default
+        cell.accessoryType = todoItem.isCompleted ? .checkmark : .none
         return cell
     }
     
