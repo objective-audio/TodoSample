@@ -39,7 +39,8 @@ class TodoController {
     }
     
     func addTodoItem(name: String) {
-        self.todoItems = [TodoItem(name: name, createdAt: Date())] + self.todoItems
+        let newItem = TodoItem(name: name, createdAt: Date(), isCompleted: false)
+        self.todoItems = [newItem] + self.todoItems
         
         self.save()
         

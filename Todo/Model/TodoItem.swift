@@ -11,10 +11,12 @@ import Foundation
 class TodoItem: Codable {
     let name: String
     let createdAt: Date
+    var isCompleted: Bool
     
-    init(name: String, createdAt: Date) {
+    init(name: String, createdAt: Date, isCompleted: Bool) {
         self.name = name
         self.createdAt = createdAt
+        self.isCompleted = isCompleted
     }
     
     func json() -> String? {
