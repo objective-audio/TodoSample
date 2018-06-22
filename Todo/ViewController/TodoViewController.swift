@@ -27,6 +27,8 @@ class TodoViewController: UITableViewController {
                 self?.addCell(at: index)
             case .todoItemRemoved(let index):
                 self?.removeCell(at: index)
+            case .todoItemEdited(let index):
+                self?.reloadCell(at: index)
             case .historyItemAdded:
                 break
             }
@@ -45,12 +47,12 @@ class TodoViewController: UITableViewController {
         let cell = tableView.dequeueReusableCell(withIdentifier: self.cellIdentifier, for: indexPath)
         let todoItem = self.todoItems[indexPath.row]
         cell.textLabel?.text = todoItem.name
-        cell.selectionStyle = todoItem.isCompleted ? .none : .default
         cell.accessoryType = todoItem.isCompleted ? .checkmark : .none
         return cell
     }
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        TodoController.shared.toggleCompletedTodoItem(at: indexPath.row)
     }
     
     override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
@@ -75,5 +77,9 @@ extension TodoViewController {
     
     func removeCell(at row: Int) {
         self.tableView.deleteRows(at: [IndexPath(row: row, section: 0)], with: .automatic)
+    }
+    
+    func reloadCell(at row: Int) {
+        self.tableView.reloadRows(at: [IndexPath(row: row, section: 0)], with: .automatic)
     }
 }

@@ -17,6 +17,7 @@ class TodoController {
     
     enum Event {
         case todoItemAdded(at :Int)
+        case todoItemEdited(at :Int)
         case todoItemRemoved(at :Int)
         case historyItemAdded(at: Int)
     }
@@ -45,6 +46,15 @@ class TodoController {
         self.save()
         
         self.eventSender.post(context: .todoItemAdded(at: 0))
+    }
+    
+    func toggleCompletedTodoItem(at index: Int) {
+        let item = self.todoItems[index]
+        item.isCompleted = !item.isCompleted
+        
+        self.save()
+        
+        self.eventSender.post(context: .todoItemEdited(at: index))
     }
     
     func deleteTodoItem(at index: Int) {

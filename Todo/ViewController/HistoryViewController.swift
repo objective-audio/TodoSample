@@ -23,9 +23,7 @@ class HistoryViewController: UITableViewController {
         
         self.receiver.add(sender: TodoController.shared.eventSender) { [weak self] event in
             switch event {
-            case .todoItemAdded:
-                break
-            case .todoItemRemoved:
+            case .todoItemAdded, .todoItemRemoved, .todoItemEdited:
                 break
             case .historyItemAdded(let index):
                 self?.addCell(at: index)
