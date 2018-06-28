@@ -7,5 +7,6 @@ target 'Todo' do
 
   # Pods for Todo
   pod 'Firebase/Core'
+  pod 'Firebase/Firestore'
 
 end
