@@ -33,6 +33,7 @@ PODS:
     - Protobuf (~> 3.1)
   - FirebaseInstanceID (3.1.1):
     - FirebaseCore (~> 5.0)
+  - FlowGraph (0.2.0)
   - GoogleToolboxForMac/Defines (2.1.4)
   - GoogleToolboxForMac/NSData+zlib (2.1.4):
     - GoogleToolboxForMac/Defines (= 2.1.4)
@@ -66,6 +67,7 @@ PODS:
 DEPENDENCIES:
   - Firebase/Core
   - Firebase/Firestore
+  - FlowGraph
 
 SPEC CHECKSUMS:
   BoringSSL: cf3f1793eb6e3c445c4d150456341f149c268a35
@@ -74,6 +76,7 @@ SPEC CHECKSUMS:
   FirebaseCore: 62f1b792a49bb9e8b4073f24606d2c93ffc352f0
   FirebaseFirestore: 53f6fe858494c39dbfd5237655e0641152a88c89
   FirebaseInstanceID: f3f0657372592ecdfdfe2cac604a5a75758376a6
+  FlowGraph: 3093b33fe6427295a922358186e270c42969da43
   GoogleToolboxForMac: 91c824d21e85b31c2aae9bb011c5027c9b4e738f
   gRPC: 9362451032695e2dfb7bafcd3740e3a27939e4ff
   gRPC-Core: 9696b220565b283e021cf2722d473a4a74b7622a
@@ -83,6 +86,6 @@ SPEC CHECKSUMS:
   nanopb: 5601e6bca2dbf1ed831b519092ec110f66982ca3
   Protobuf: 0fc0ad8bec688b2a3017a139953e01374fedbd5f
 
-PODFILE CHECKSUM: 639e65bc4eaf2b5e212531ff8bdd70e649203a62
+PODFILE CHECKSUM: 9dab34bf24002b847d68ad2e0a96202e8f179f70
 
 COCOAPODS: 1.4.0

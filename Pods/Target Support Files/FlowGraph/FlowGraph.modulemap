@@ -1,0 +1,6 @@
+framework module FlowGraph {
+  umbrella header "FlowGraph-umbrella.h"
+
+  export *
+  module * { export * }
+}
