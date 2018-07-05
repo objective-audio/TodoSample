@@ -14,12 +14,14 @@
 		1A2779A720D3A9730010188C /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 1A2779A520D3A9730010188C /* Main.storyboard */; };
 		1A2779A920D3A9750010188C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1A2779A820D3A9750010188C /* Assets.xcassets */; };
 		1A2779AC20D3A9750010188C /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 1A2779AA20D3A9750010188C /* LaunchScreen.storyboard */; };
+		1A2EF08F20E615A200F447F4 /* EnumEnumerable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2EF08E20E615A100F447F4 /* EnumEnumerable.swift */; };
+		1A4AF9E220EA11E200357632 /* TodoTabBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A4AF9E120EA11E200357632 /* TodoTabBarController.swift */; };
 		1A69604820E47FD400D6096A /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 1A69604720E47FD400D6096A /* GoogleService-Info.plist */; };
+		1A69604A20E4EE1F00D6096A /* CloudStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A69604920E4EE1F00D6096A /* CloudStore.swift */; };
+		1A69604C20E4F2C600D6096A /* TodoCloudController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A69604B20E4F2C600D6096A /* TodoCloudController.swift */; };
+		1AC0781920EC5D3700D814A2 /* TodoAddingCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AC0781820EC5D3700D814A2 /* TodoAddingCell.swift */; };
 		1ACBA30A20D3B58A0024F845 /* TodoItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1ACBA30920D3B58A0024F845 /* TodoItem.swift */; };
-		1ACBA30C20D3B6210024F845 /* TodoController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1ACBA30B20D3B6210024F845 /* TodoController.swift */; };
 		1ACBA30E20D3B6C70024F845 /* HistoryItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1ACBA30D20D3B6C70024F845 /* HistoryItem.swift */; };
-		1ACBA31220D3BE640024F845 /* DataStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1ACBA31120D3BE640024F845 /* DataStore.swift */; };
-		1ACBA31420D3C08F0024F845 /* TodoEditViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1ACBA31320D3C08F0024F845 /* TodoEditViewController.swift */; };
 		BB116C7B85D2C6C894CB6C4A /* Pods_Todo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 10E7678628CD1E98DABA9E18 /* Pods_Todo.framework */; };
 /* End PBXBuildFile section */
 
@@ -34,12 +36,14 @@
 		1A2779A820D3A9750010188C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		1A2779AB20D3A9750010188C /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		1A2779AD20D3A9750010188C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		1A2EF08E20E615A100F447F4 /* EnumEnumerable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EnumEnumerable.swift; sourceTree = "<group>"; };
+		1A4AF9E120EA11E200357632 /* TodoTabBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodoTabBarController.swift; sourceTree = "<group>"; };
 		1A69604720E47FD400D6096A /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		1A69604920E4EE1F00D6096A /* CloudStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudStore.swift; sourceTree = "<group>"; };
+		1A69604B20E4F2C600D6096A /* TodoCloudController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodoCloudController.swift; sourceTree = "<group>"; };
+		1AC0781820EC5D3700D814A2 /* TodoAddingCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodoAddingCell.swift; sourceTree = "<group>"; };
 		1ACBA30920D3B58A0024F845 /* TodoItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodoItem.swift; sourceTree = "<group>"; };
-		1ACBA30B20D3B6210024F845 /* TodoController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodoController.swift; sourceTree = "<group>"; };
 		1ACBA30D20D3B6C70024F845 /* HistoryItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryItem.swift; sourceTree = "<group>"; };
-		1ACBA31120D3BE640024F845 /* DataStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataStore.swift; sourceTree = "<group>"; };
-		1ACBA31320D3C08F0024F845 /* TodoEditViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodoEditViewController.swift; sourceTree = "<group>"; };
 		727B60939C6F0DB793D08D5F /* Pods-Todo.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Todo.debug.xcconfig"; path = "Pods/Target Support Files/Pods-Todo/Pods-Todo.debug.xcconfig"; sourceTree = "<group>"; };
 		A7327BE069B4760C5107EF6A /* Pods-Todo.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Todo.release.xcconfig"; path = "Pods/Target Support Files/Pods-Todo/Pods-Todo.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -104,8 +108,9 @@
 			isa = PBXGroup;
 			children = (
 				1A2779A120D3A9730010188C /* TodoViewController.swift */,
-				1ACBA31320D3C08F0024F845 /* TodoEditViewController.swift */,
+				1AC0781820EC5D3700D814A2 /* TodoAddingCell.swift */,
 				1A2779A320D3A9730010188C /* HistoryViewController.swift */,
+				1A4AF9E120EA11E200357632 /* TodoTabBarController.swift */,
 			);
 			path = ViewController;
 			sourceTree = "<group>";
@@ -113,7 +118,7 @@
 		1AAFE66620DA13E2000292BF /* Controller */ = {
 			isa = PBXGroup;
 			children = (
-				1ACBA30B20D3B6210024F845 /* TodoController.swift */,
+				1A69604B20E4F2C600D6096A /* TodoCloudController.swift */,
 			);
 			path = Controller;
 			sourceTree = "<group>";
@@ -130,8 +135,9 @@
 		1AAFE66820DA141A000292BF /* Helper */ = {
 			isa = PBXGroup;
 			children = (
-				1ACBA31120D3BE640024F845 /* DataStore.swift */,
+				1A69604920E4EE1F00D6096A /* CloudStore.swift */,
 				1A0740EF20D7AD810043408D /* UBINotification.swift */,
+				1A2EF08E20E615A100F447F4 /* EnumEnumerable.swift */,
 			);
 			path = Helper;
 			sourceTree = "<group>";
@@ -292,13 +298,15 @@
 			buildActionMask = 2147483647;
 			files = (
 				1A2779A420D3A9730010188C /* HistoryViewController.swift in Sources */,
-				1ACBA31420D3C08F0024F845 /* TodoEditViewController.swift in Sources */,
-				1ACBA31220D3BE640024F845 /* DataStore.swift in Sources */,
+				1A69604C20E4F2C600D6096A /* TodoCloudController.swift in Sources */,
+				1A69604A20E4EE1F00D6096A /* CloudStore.swift in Sources */,
+				1A4AF9E220EA11E200357632 /* TodoTabBarController.swift in Sources */,
 				1A0740F020D7AD810043408D /* UBINotification.swift in Sources */,
 				1A2779A020D3A9730010188C /* AppDelegate.swift in Sources */,
 				1ACBA30A20D3B58A0024F845 /* TodoItem.swift in Sources */,
+				1A2EF08F20E615A200F447F4 /* EnumEnumerable.swift in Sources */,
 				1A2779A220D3A9730010188C /* TodoViewController.swift in Sources */,
-				1ACBA30C20D3B6210024F845 /* TodoController.swift in Sources */,
+				1AC0781920EC5D3700D814A2 /* TodoAddingCell.swift in Sources */,
 				1ACBA30E20D3B6C70024F845 /* HistoryItem.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -446,7 +454,10 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				INFOPLIST_FILE = Todo/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = "jp.objective-audio.Todo";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 4.0;
@@ -461,7 +472,10 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				INFOPLIST_FILE = Todo/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = "jp.objective-audio.Todo";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 4.0;

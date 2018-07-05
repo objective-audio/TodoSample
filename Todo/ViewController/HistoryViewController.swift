@@ -12,8 +12,8 @@ class HistoryViewController: UITableViewController {
     let cellIdentifier: String = "HistoryCell"
     let receiver = NotificationReceiver()
     
-    var histories: [HistoryItem] {
-        return TodoController.shared.historyItems
+    var historyItems: [HistoryItem] {
+        return TodoCloudController.shared.historyItems
     }
     
     override func viewDidLoad() {
@@ -21,28 +21,29 @@ class HistoryViewController: UITableViewController {
         
         self.title = "History Items"
         
-        self.receiver.add(sender: TodoController.shared.eventSender) { [weak self] event in
+        self.receiver.add(sender: TodoCloudController.shared.eventSender) { [weak self] event in
             switch event {
-            case .todoItemAdded, .todoItemRemoved, .todoItemEdited:
-                break
+            case .historyItemsLoaded:
+                self?.tableView.reloadData()
             case .historyItemAdded(let index):
-                self?.addCell(at: index)
+                self?.tableView.insertRows(at: [IndexPath(row: index, section: 0)], with: .none)
+            default:
                 break
             }
         }
     }
-
+    
     override func numberOfSections(in tableView: UITableView) -> Int {
         return 1
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return self.histories.count
+        return self.historyItems.count
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: self.cellIdentifier, for: indexPath)
-        cell.textLabel?.text = self.histories[indexPath.row].name
+        cell.textLabel?.text = self.historyItems[indexPath.row].name
         return cell
     }
 }
