@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14113" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="49e-Tb-3d3">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14295.6" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="49e-Tb-3d3">
     <device id="retina4_7" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14088"/>
-        <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14270.1"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -44,14 +43,17 @@
                                     <rect key="frame" x="0.0" y="0.0" width="375" height="43.5"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
-                                        <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="qi8-ma-zeC">
+                                        <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="natural" minimumFontSize="17" clearButtonMode="whileEditing" translatesAutoresizingMaskIntoConstraints="NO" id="qi8-ma-zeC">
                                             <rect key="frame" x="16" y="6" width="283" height="30"/>
                                             <nil key="textColor"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                             <textInputTraits key="textInputTraits"/>
+                                            <connections>
+                                                <outlet property="delegate" destination="jPj-Sb-Zhm" id="z3F-LY-XZ6"/>
+                                            </connections>
                                         </textField>
                                         <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="SjU-hn-DPT">
-                                            <rect key="frame" x="309" y="0.0" width="50" height="44"/>
+                                            <rect key="frame" x="309" y="0.0" width="50" height="43.5"/>
                                             <constraints>
                                                 <constraint firstAttribute="width" constant="50" id="FIz-Ur-gyS"/>
                                             </constraints>
@@ -72,6 +74,7 @@
                                     </constraints>
                                 </tableViewCellContentView>
                                 <connections>
+                                    <outlet property="addButton" destination="SjU-hn-DPT" id="bbi-wh-txD"/>
                                     <outlet property="nameTextField" destination="qi8-ma-zeC" id="dL1-vK-CXH"/>
                                 </connections>
                             </tableViewCell>
@@ -81,13 +84,7 @@
                             <outlet property="delegate" destination="Mw0-zu-mqI" id="6ht-Jt-WFu"/>
                         </connections>
                     </tableView>
-                    <navigationItem key="navigationItem" id="teW-3B-MRl">
-                        <barButtonItem key="rightBarButtonItem" systemItem="add" id="8yZ-1i-OUF">
-                            <connections>
-                                <segue destination="wL6-VM-FdD" kind="presentation" id="vYC-c7-ibR"/>
-                            </connections>
-                        </barButtonItem>
-                    </navigationItem>
+                    <navigationItem key="navigationItem" id="teW-3B-MRl"/>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="MLx-Z6-tdg" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>

@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import SwiftChaining
 
 class TodoViewController: UITableViewController {
     enum Section: Int {
@@ -23,10 +24,10 @@ class TodoViewController: UITableViewController {
         }
     }
     
-    let receiver = NotificationReceiver()
+    var observer: AnyObserver?
     
-    var todoItems: [TodoItem] {
-        return TodoCloudController.shared.todoItems
+    var todoItems: [Holder<TodoItem>] {
+        return TodoCloudController.shared.todoItems.elements
     }
 
     override func viewDidLoad() {
@@ -34,32 +35,18 @@ class TodoViewController: UITableViewController {
         
         self.title = "Todo Items"
         
-        self.receiver.add(sender: TodoCloudController.shared.eventSender) { [weak self] event in
+        self.observer = TodoCloudController.shared.todoItems.chain().do({ [weak self] event in
             switch event {
-            case .todoItemsLoaded:
+            case .all:
                 self?.reloadAllCells()
-            case .historyItemsLoaded:
-                break // 履歴は表示しない
-            case .todoItemAdded(let index):
+            case .inserted(_, let index):
                 self?.addCell(at: index)
-            case .todoItemRemoved(let index):
+            case .removed(_, let index):
                 self?.removeCell(at: index)
-            case .todoItemEdited(let index):
+            case .replaced(_, let index), .relayed(_, let index, _):
                 self?.reloadCell(at: index)
-                
-            case .todoItemsLoadError,
-                 .todoItemAddError,
-                 .todoItemEditError,
-                 .todoItemRemoveError,
-                 .historyItemsLoadError,
-                 .historyItemAdded,
-                 .historyItemAddError,
-                 .beginConnection,
-                 .endConnection:
-                // 何もしない
-                break
             }
-        }
+        }).sync()
     }
     
     override func numberOfSections(in tableView: UITableView) -> Int {
@@ -84,7 +71,7 @@ class TodoViewController: UITableViewController {
         case .adding:
             break
         case .editing:
-            let todoItem = self.todoItems[indexPath.row]
+            let todoItem = self.todoItems[indexPath.row].value
             cell.textLabel?.text = todoItem.name
             cell.accessoryType = todoItem.isCompleted ? .checkmark : .none
         }

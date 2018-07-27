@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import SwiftChaining
 
 class TodoItem: Codable {
     let name: String
@@ -49,4 +50,8 @@ class TodoItem: Codable {
         
         return TodoItem(name: name, createdAt: createdAt, isCompleted: isCompleted, isDeleted: isDeleted, documentID: documentID)
     }
+}
+
+extension TodoItem: Relayable {
+    typealias SendValue = TodoItem
 }

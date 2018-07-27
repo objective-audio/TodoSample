@@ -9,6 +9,7 @@
 import Foundation
 import FlowGraph
 import Firebase
+import SwiftChaining
 
 class TodoCloudController {
     static let shared = TodoCloudController()
@@ -30,26 +31,22 @@ class TodoCloudController {
         case firstSetup
         case loadingTodoItemsEnter
         case todoItemsLoadSucceeded
-        case todoItemsLoadFailed
         case loadingHistoryItemsEnter
         case historyItemsLoadSucceeded
-        case historyItemsLoadFailed
         
         case addingTodoItemEnter
         case addTodoItemSucceeded
-        case addTodoItemFailed
         
         case removingTodoItemEnter
         case removeTodoItemSucceeded
-        case removeTodoItemFailed
         
         case editingTodoItemEnter
         case editTodoItemSucceeded
-        case editTodoItemFailed
         
         case addingHistoryItemEnter
         case addHistoryItemSucceeded
-        case addHistoryItemFailed
+        
+        case connectionFailed
     }
     
     enum FlowEventKind {
@@ -59,69 +56,35 @@ class TodoCloudController {
         case addTodoItem(name: String)
         case removeTodoItem(at: Int)
         case editTodoItem(at: Int)
+        case addingNameChanged(String?)
         
         // 内部からのイベント
         case todoItemsLoadSucceeded(items: [TodoItem])
-        case todoItemsLoadFailed(error: Error)
-        
         case historyItemsLoadSucceeded(items: [HistoryItem])
-        case historyItemsLoadFailed(error: Error)
-        
         case todoItemAddSucceeded(item: TodoItem)
-        case todoItemAddFailed(error: Error)
-        
         case todoItemRemoveSucceeded(at: Int)
-        case todoItemRemoveFailed(error: Error)
-        
         case todoItemEditSucceeded(at: Int, item: TodoItem)
-        case todoItemEditFailed(error: Error)
-        
         case todoItemRemoved(_: TodoItem)
         case historyItemAddSucceeded(item: HistoryItem)
-        case historyItemAddFailed(error: Error)
+        
+        case connectionFailed(error: Error)
     }
     
     typealias FlowEvent = (kind: FlowEventKind, object: TodoCloudController)
     
-    private let graph: FlowGraph<WaitingState, RunningState, FlowEvent>
-    
-    // Notification関連
-    
-    enum ViewEvent {
-        case todoItemsLoaded
-        case todoItemsLoadError
-        
-        case historyItemsLoaded
-        case historyItemsLoadError
-        
-        case todoItemAdded(at: Int)
-        case todoItemAddError
-        
-        case todoItemEdited(at: Int)
-        case todoItemEditError
-        
-        case todoItemRemoved(at: Int)
-        case todoItemRemoveError
-        
-        case historyItemAdded(at: Int)
-        case historyItemAddError
-        
-        case beginConnection
-        case endConnection
-    }
-    
-    class EventSender: NotificationSendable {
-        typealias Context = ViewEvent
-        static let notificationName = Notification.Name("TodoCloudControllerNotification")
-    }
-    
-    let eventSender = EventSender()
+    private let graph = FlowGraph<WaitingState, RunningState, FlowEvent>()
     
     // 外部へ公開するパラメータ
     
-    private(set) var todoItems: [TodoItem] = []
-    private(set) var historyItems: [HistoryItem] = []
-    private(set) var lastError: Error?
+    let todoItems = ArrayHolder<Holder<TodoItem>>()
+    let historyItems = ArrayHolder<HistoryItem>()
+    
+    private(set) var isConnecting = Holder<Bool>(false)
+    private(set) var addingName = Holder<String?>(nil)
+    private(set) var canAddTodoItem = Holder<Bool>(false)
+    
+    let errorNotifier = Notifier<Error>()
+    private var pool = ObserverPool()
     
     var is_connecting: Bool {
         switch self.graph.state {
@@ -138,9 +101,7 @@ class TodoCloudController {
     }
     
     init() {
-        let builder = FlowGraphBuilder<WaitingState, RunningState, FlowEvent>()
-        
-        builder.add(waiting: .begin) { event in
+        self.graph.add(waiting: .begin) { event in
             switch event.kind {
             case .firstSetup:
                 return .run(.firstSetup, event)
@@ -150,15 +111,17 @@ class TodoCloudController {
         }
         
         // 初期セットアップ
-        builder.add(running: .firstSetup) { event in
+        self.graph.add(running: .firstSetup) { event in
             FirebaseApp.configure()
+            
+            event.object.setup()
             
             return .run(.loadingTodoItemsEnter, event)
         }
         
         // アイテム取得の通信開始
-        builder.add(running: .loadingTodoItemsEnter) { event in
-            event.object.postBeginConnection()
+        self.graph.add(running: .loadingTodoItemsEnter) { event in
+            event.object.isConnecting.value = true
             
             CloudStore.todoItems() { [weak object = event.object] result in
                 guard let object = object else {
@@ -169,8 +132,7 @@ class TodoCloudController {
                 case .success(let items):
                     object.send(flowEvent: .todoItemsLoadSucceeded(items: items))
                 case .failed(let error):
-                    object.lastError = error
-                    object.send(flowEvent: .todoItemsLoadFailed(error: error))
+                    object.send(flowEvent: .connectionFailed(error: error))
                 }
             }
             
@@ -178,24 +140,23 @@ class TodoCloudController {
         }
         
         // アイテム取得の通信を待つ
-        builder.add(waiting: .loadingTodoItems) { event in
+        self.graph.add(waiting: .loadingTodoItems) { event in
             switch event.kind {
             case .todoItemsLoadSucceeded:
                 return .run(.todoItemsLoadSucceeded, event)
-            case .todoItemsLoadFailed:
-                return .run(.todoItemsLoadFailed, event)
+            case .connectionFailed:
+                return .run(.connectionFailed, event)
             default:
                 return .stay
             }
         }
         
         // アイテムの取得成功
-        builder.add(running: .todoItemsLoadSucceeded) { event in
-            event.object.postEndConnection()
+        self.graph.add(running: .todoItemsLoadSucceeded) { event in
+            event.object.isConnecting.value = false
             
             if case .todoItemsLoadSucceeded(let items) = event.kind {
-                event.object.todoItems = items
-                event.object.eventSender.post(context: .todoItemsLoaded)
+                event.object.todoItems.replace(items.map { Holder($0) })
                 
                 return .run(.loadingHistoryItemsEnter, event)
             } else {
@@ -203,17 +164,9 @@ class TodoCloudController {
             }
         }
         
-        // アイテムの取得失敗
-        builder.add(running: .todoItemsLoadFailed) { event in
-            event.object.postEndConnection()
-            event.object.eventSender.post(context: .todoItemsLoadError)
-            
-            return .wait(.operating)
-        }
-        
         // 履歴取得の通信開始
-        builder.add(running: .loadingHistoryItemsEnter) { event in
-            event.object.postBeginConnection()
+        self.graph.add(running: .loadingHistoryItemsEnter) { event in
+            event.object.isConnecting.value = true
             
             CloudStore.historyItems() { [weak object = event.object] result in
                 guard let object = object else {
@@ -224,8 +177,7 @@ class TodoCloudController {
                 case .success(let items):
                     object.send(flowEvent: .historyItemsLoadSucceeded(items: items))
                 case .failed(let error):
-                    object.lastError = error
-                    object.send(flowEvent: .historyItemsLoadFailed(error: error))
+                    object.send(flowEvent: .connectionFailed(error: error))
                 }
             }
             
@@ -233,24 +185,23 @@ class TodoCloudController {
         }
         
         // 履歴取得中
-        builder.add(waiting: .loadingHistoryItems) { event in
+        self.graph.add(waiting: .loadingHistoryItems) { event in
             switch event.kind {
             case .historyItemsLoadSucceeded:
                 return .run(.historyItemsLoadSucceeded, event)
-            case .historyItemsLoadFailed:
-                return .run(.historyItemsLoadFailed, event)
+            case .connectionFailed:
+                return .run(.connectionFailed, event)
             default:
                 return .stay
             }
         }
         
         // 履歴取得成功
-        builder.add(running: .historyItemsLoadSucceeded) { event in
-            event.object.postEndConnection()
+        self.graph.add(running: .historyItemsLoadSucceeded) { event in
+            event.object.isConnecting.value = false
             
             if case .historyItemsLoadSucceeded(let items) = event.kind {
-                event.object.historyItems = items
-                event.object.eventSender.post(context: .historyItemsLoaded)
+                event.object.historyItems.replace(items)
                 
                 return .wait(.operating)
             } else {
@@ -260,32 +211,32 @@ class TodoCloudController {
             return .wait(.operating)
         }
         
-        // 履歴取得失敗
-        builder.add(running: .historyItemsLoadFailed) { event in
-            event.object.postEndConnection()
-            event.object.eventSender.post(context: .historyItemsLoadError)
-            
-            return .wait(.operating)
-        }
-        
         // 操作中
-        builder.add(waiting: .operating) { event in
-            // TODO
+        self.graph.add(waiting: .operating) { event in
             switch event.kind {
-            case .addTodoItem:
-                return .run(.addingTodoItemEnter, event)
+            case .addTodoItem(let name):
+                event.object.addingName.value = name
+                
+                if event.object.canAddTodoItem.value {
+                    return .run(.addingTodoItemEnter, event)
+                } else {
+                    return .stay
+                }
             case .removeTodoItem:
                 return .run(.removingTodoItemEnter, event)
             case .editTodoItem:
                 return .run(.editingTodoItemEnter, event)
+            case .addingNameChanged(let name):
+                event.object.addingName.value = name
+                return .stay
             default:
                 return .stay
             }
         }
         
         // アイテム追加の通信開始
-        builder.add(running: .addingTodoItemEnter) { event in
-            event.object.postBeginConnection()
+        self.graph.add(running: .addingTodoItemEnter) { event in
+            event.object.isConnecting.value = true
             
             if case .addTodoItem(let name) = event.kind {
                 
@@ -298,7 +249,7 @@ class TodoCloudController {
                     case .success(let item):
                         object.send(flowEvent: .todoItemAddSucceeded(item: item))
                     case .failed(let error):
-                        object.send(flowEvent: .todoItemAddFailed(error: error))
+                        object.send(flowEvent: .connectionFailed(error: error))
                     }
                 }
             } else {
@@ -309,24 +260,24 @@ class TodoCloudController {
         }
         
         // アイテム追加の通信中
-        builder.add(waiting: .addingTodoItem) { event in
+        self.graph.add(waiting: .addingTodoItem) { event in
             switch event.kind {
             case .todoItemAddSucceeded:
                 return .run(.addTodoItemSucceeded, event)
-            case .todoItemAddFailed:
-                return .run(.addTodoItemFailed, event)
+            case .connectionFailed:
+                return .run(.connectionFailed, event)
             default:
                 return .stay
             }
         }
         
         // アイテム追加成功
-        builder.add(running: .addTodoItemSucceeded) { event in
-            event.object.postEndConnection()
+        self.graph.add(running: .addTodoItemSucceeded) { event in
+            event.object.isConnecting.value = false
             
             if case .todoItemAddSucceeded(let item) = event.kind {
-                event.object.todoItems.insert(item, at: 0)
-                event.object.eventSender.post(context: .todoItemAdded(at: 0))
+                event.object.todoItems.insert(Holder(item), at: 0)
+                event.object.addingName.value = ""
             } else {
                 fatalError()
             }
@@ -334,20 +285,12 @@ class TodoCloudController {
             return .wait(.operating)
         }
         
-        // アイテム追加失敗
-        builder.add(running: .addTodoItemFailed) { event in
-            event.object.postEndConnection()
-            event.object.eventSender.post(context: .todoItemAddError)
-            
-            return .wait(.operating)
-        }
-        
         // アイテム削除の通信開始
-        builder.add(running: .removingTodoItemEnter) { event in
-            event.object.postBeginConnection()
+        self.graph.add(running: .removingTodoItemEnter) { event in
+            event.object.isConnecting.value = true
             
             if case .removeTodoItem(let index) = event.kind {
-                let sendItem = event.object.todoItems[index]
+                let sendItem = event.object.todoItems[index].value
                 
                 CloudStore.delete(todoItem: sendItem) { [weak object = event.object] result in
                     guard let object = object else {
@@ -358,7 +301,7 @@ class TodoCloudController {
                     case .success:
                         object.send(flowEvent: .todoItemRemoveSucceeded(at: index))
                     case .failed(let error):
-                        object.send(flowEvent: .todoItemRemoveFailed(error: error))
+                        object.send(flowEvent: .connectionFailed(error: error))
                     }
                 }
             }
@@ -367,24 +310,23 @@ class TodoCloudController {
         }
         
         // アイテム削除の通信中
-        builder.add(waiting: .removingTodoItem) { event in
+        self.graph.add(waiting: .removingTodoItem) { event in
             switch event.kind {
             case .todoItemRemoveSucceeded:
                 return .run(.removeTodoItemSucceeded, event)
-            case .todoItemRemoveFailed:
-                return .run(.removeTodoItemFailed, event)
+            case .connectionFailed:
+                return .run(.connectionFailed, event)
             default:
                 return .stay
             }
         }
         
         // アイテム削除成功
-        builder.add(running: .removeTodoItemSucceeded) { event in
-            event.object.postEndConnection()
+        self.graph.add(running: .removeTodoItemSucceeded) { event in
+            event.object.isConnecting.value = false
             
             if case .todoItemRemoveSucceeded(let index) = event.kind {
-                let item = event.object.todoItems.remove(at: index)
-                event.object.eventSender.post(context: .todoItemRemoved(at: index))
+                let item = event.object.todoItems.remove(at: index).value
                 
                 return .run(.addingHistoryItemEnter, (.todoItemRemoved(item), event.object))
             } else {
@@ -392,20 +334,12 @@ class TodoCloudController {
             }
         }
         
-        // アイテム削除失敗
-        builder.add(running: .removeTodoItemFailed) { event in
-            event.object.postEndConnection()
-            event.object.eventSender.post(context: .todoItemRemoveError)
-            
-            return .wait(.operating)
-        }
-        
         // アイテム更新の通信開始
-        builder.add(running: .editingTodoItemEnter) { event in
-            event.object.postBeginConnection()
+        self.graph.add(running: .editingTodoItemEnter) { event in
+            event.object.isConnecting.value = true
             
             if case .editTodoItem(let index) = event.kind {
-                let sendItem = event.object.todoItems[index]
+                let sendItem = event.object.todoItems[index].value
                 
                 CloudStore.toggle(todoItem: sendItem) { [weak object = event.object] result in
                     guard let object = object else {
@@ -416,7 +350,7 @@ class TodoCloudController {
                     case .success(let item):
                         object.send(flowEvent: .todoItemEditSucceeded(at: index, item: item))
                     case .failed(let error):
-                        object.send(flowEvent: .todoItemEditFailed(error: error))
+                        object.send(flowEvent: .connectionFailed(error: error))
                     }
                 }
             }
@@ -425,26 +359,23 @@ class TodoCloudController {
         }
         
         // アイテム更新の通信中
-        builder.add(waiting: .editingTodoItem) { event in
+        self.graph.add(waiting: .editingTodoItem) { event in
             switch event.kind {
             case .todoItemEditSucceeded:
                 return .run(.editTodoItemSucceeded, event)
-            case .todoItemEditFailed:
-                return .run(.editTodoItemFailed, event)
+            case .connectionFailed:
+                return .run(.connectionFailed, event)
             default:
                 return .stay
             }
         }
         
         // アイテム更新成功
-        builder.add(running: .editTodoItemSucceeded) { event in
-            event.object.postEndConnection()
+        self.graph.add(running: .editTodoItemSucceeded) { event in
+            event.object.isConnecting.value = false
             
             if case .todoItemEditSucceeded(let index, let item) = event.kind {
-                event.object.todoItems.remove(at: index)
-                event.object.todoItems.insert(item, at: index)
-
-                event.object.eventSender.post(context: .todoItemEdited(at: index))
+                event.object.todoItems[index].value = item
             } else {
                 fatalError()
             }
@@ -452,17 +383,9 @@ class TodoCloudController {
             return .wait(.operating)
         }
         
-        // アイテム更新失敗
-        builder.add(running: .editTodoItemFailed) { event in
-            event.object.postEndConnection()
-            event.object.eventSender.post(context: .todoItemEditError)
-            
-            return .wait(.operating)
-        }
-        
         // 履歴追加の通信開始
-        builder.add(running: .addingHistoryItemEnter) { event in
-            event.object.postBeginConnection()
+        self.graph.add(running: .addingHistoryItemEnter) { event in
+            event.object.isConnecting.value = true
             
             if case .todoItemRemoved(let item) = event.kind {
                 CloudStore.addHistoryItem(from: item) { [weak object = event.object] result in
@@ -474,7 +397,7 @@ class TodoCloudController {
                     case .success(let item):
                         object.send(flowEvent: .historyItemAddSucceeded(item: item))
                     case .failed(let error):
-                        object.send(flowEvent: .historyItemAddFailed(error: error))
+                        object.send(flowEvent: .connectionFailed(error: error))
                     }
                 }
             } else {
@@ -485,25 +408,23 @@ class TodoCloudController {
         }
         
         // 履歴追加の通信中
-        builder.add(waiting: .addingHistoryItem) { event in
+        self.graph.add(waiting: .addingHistoryItem) { event in
             switch event.kind {
             case .historyItemAddSucceeded:
                 return .run(.addHistoryItemSucceeded, event)
-            case .historyItemAddFailed:
-                return .run(.addHistoryItemFailed, event)
+            case .connectionFailed:
+                return .run(.connectionFailed, event)
             default:
                 return .stay
             }
         }
         
         // 履歴追加成功
-        builder.add(running: .addHistoryItemSucceeded) { event in
-            event.object.postEndConnection()
+        self.graph.add(running: .addHistoryItemSucceeded) { event in
+            event.object.isConnecting.value = false
             
             if case .historyItemAddSucceeded(let item) = event.kind {
                 event.object.historyItems.insert(item, at: 0)
-
-                event.object.eventSender.post(context: .historyItemAdded(at: 0))
             } else {
                 fatalError()
             }
@@ -511,23 +432,27 @@ class TodoCloudController {
             return .wait(.operating)
         }
         
-        // 履歴追加失敗
-        builder.add(running: .addHistoryItemFailed) { event in
-            event.object.postEndConnection()
-            event.object.eventSender.post(context: .historyItemAddError)
+        // 通信失敗
+        self.graph.add(running: .connectionFailed) { event in
+            if case .connectionFailed(let error) = event.kind {
+                event.object.isConnecting.value = false
+                event.object.errorNotifier.notify(value: error)
+            } else {
+                fatalError()
+            }
             
             return .wait(.operating)
         }
         
         for state in WaitingState.cases {
-            assert(builder.contains(state: .waiting(state)))
+            assert(self.graph.contains(state: .waiting(state)))
         }
         
         for state in RunningState.cases {
-            assert(builder.contains(state: .running(state)))
+            assert(self.graph.contains(state: .running(state)))
         }
         
-        self.graph = builder.build(initial: .begin)
+        self.graph.begin(with: .begin)
     }
     
     func firstSetup() {
@@ -546,20 +471,30 @@ class TodoCloudController {
         self.send(flowEvent: .removeTodoItem(at: index))
     }
     
+    func addingNameChanged(_ name: String?) {
+        self.send(flowEvent: .addingNameChanged(name))
+    }
+    
     private func send(flowEvent kind: FlowEventKind) {
         self.graph.run((kind, self))
     }
-    
-    private func postBeginConnection() {
-        self.eventSender.post(context: .beginConnection)
-        UIApplication.shared.beginIgnoringInteractionEvents()
-        print("begin connection")
-    }
-    
-    private func postEndConnection() {
-        UIApplication.shared.endIgnoringInteractionEvents()
-        self.eventSender.post(context: .endConnection)
+}
+
+extension TodoCloudController {
+    func setup() {
+        self.pool += self.isConnecting.chain().do({ value in
+            if value {
+                UIApplication.shared.beginIgnoringInteractionEvents()
+            } else {
+                UIApplication.shared.endIgnoringInteractionEvents()
+            }
+        }).end()
         
-        print("end connection")
+        self.pool += self.addingName.chain().to({ name in
+            guard let name = name else {
+                return false
+            }
+            return !name.isEmpty
+        }).receive(self.canAddTodoItem).sync()
     }
 }

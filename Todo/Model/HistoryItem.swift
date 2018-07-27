@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import SwiftChaining
 
 class HistoryItem: Codable {
     let name: String
@@ -38,4 +39,8 @@ class HistoryItem: Codable {
         
         return HistoryItem(name: name, createdAt: createdAt, completedAt: completedAt, documentID: documentID)
     }
+}
+
+extension HistoryItem: Relayable {
+    typealias SendValue = HistoryItem
 }

@@ -7,27 +7,22 @@
 //
 
 import UIKit
+import SwiftChaining
 
 class TodoTabBarController: UITabBarController {
-    private let receiver = NotificationReceiver()
+    private var pool = ObserverPool()
     private var overlapView: UIView?
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        self.receiver.add(sender: TodoCloudController.shared.eventSender) { [weak self] event in
-            switch event {
-            case .todoItemsLoadError, .todoItemEditError, .todoItemRemoveError, .historyItemsLoadError:
-                self?.showAlert()
-            case .beginConnection:
+        self.pool += TodoCloudController.shared.isConnecting.chain().do( { [weak self] isConnecting in
+            if isConnecting {
                 self?.showIndicator()
-            case .endConnection:
+            } else {
                 self?.hideIndicator()
-                
-            default:
-                break
             }
-        }
+        }).sync()
     }
 
     private func showAlert() {

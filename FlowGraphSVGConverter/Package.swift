@@ -6,7 +6,7 @@ import PackageDescription
 let package = Package(
     name: "FlowGraphSVGConverter",
     dependencies: [
-        .package(url: "https://github.com/objective-audio/FlowGraphDotConverter.git", from: "0.2.1"),
+        .package(url: "https://github.com/objective-audio/FlowGraphDotConverter.git", from: "0.3.0"),
         ],
     targets: [
         .target(

@@ -7,13 +7,14 @@
 //
 
 import UIKit
+import SwiftChaining
 
 class HistoryViewController: UITableViewController {
     let cellIdentifier: String = "HistoryCell"
-    let receiver = NotificationReceiver()
+    var observer: AnyObserver?
     
     var historyItems: [HistoryItem] {
-        return TodoCloudController.shared.historyItems
+        return TodoCloudController.shared.historyItems.elements
     }
     
     override func viewDidLoad() {
@@ -21,16 +22,16 @@ class HistoryViewController: UITableViewController {
         
         self.title = "History Items"
         
-        self.receiver.add(sender: TodoCloudController.shared.eventSender) { [weak self] event in
+        self.observer = TodoCloudController.shared.historyItems.chain().do({ [weak self] event in
             switch event {
-            case .historyItemsLoaded:
+            case .all:
                 self?.tableView.reloadData()
-            case .historyItemAdded(let index):
+            case .inserted(_, let index):
                 self?.tableView.insertRows(at: [IndexPath(row: index, section: 0)], with: .none)
             default:
                 break
             }
-        }
+        }).sync()
     }
     
     override func numberOfSections(in tableView: UITableView) -> Int {

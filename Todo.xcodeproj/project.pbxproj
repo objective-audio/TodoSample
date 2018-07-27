@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		1A0740F020D7AD810043408D /* UBINotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0740EF20D7AD810043408D /* UBINotification.swift */; };
 		1A2779A020D3A9730010188C /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A27799F20D3A9730010188C /* AppDelegate.swift */; };
 		1A2779A220D3A9730010188C /* TodoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2779A120D3A9730010188C /* TodoViewController.swift */; };
 		1A2779A420D3A9730010188C /* HistoryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2779A320D3A9730010188C /* HistoryViewController.swift */; };
@@ -27,7 +26,6 @@
 
 /* Begin PBXFileReference section */
 		10E7678628CD1E98DABA9E18 /* Pods_Todo.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Todo.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		1A0740EF20D7AD810043408D /* UBINotification.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UBINotification.swift; sourceTree = "<group>"; };
 		1A27799C20D3A9730010188C /* Todo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Todo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		1A27799F20D3A9730010188C /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		1A2779A120D3A9730010188C /* TodoViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodoViewController.swift; sourceTree = "<group>"; };
@@ -136,7 +134,6 @@
 			isa = PBXGroup;
 			children = (
 				1A69604920E4EE1F00D6096A /* CloudStore.swift */,
-				1A0740EF20D7AD810043408D /* UBINotification.swift */,
 				1A2EF08E20E615A100F447F4 /* EnumEnumerable.swift */,
 			);
 			path = Helper;
@@ -162,7 +159,6 @@
 				1A27799920D3A9730010188C /* Frameworks */,
 				1A27799A20D3A9730010188C /* Resources */,
 				FFB13E5319F9FBB2C027AED3 /* [CP] Embed Pods Frameworks */,
-				54096A0CC612A83D0AD1189A /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -185,6 +181,7 @@
 				TargetAttributes = {
 					1A27799B20D3A9730010188C = {
 						CreatedOnToolsVersion = 9.4;
+						LastSwiftMigration = 1000;
 					};
 				};
 			};
@@ -221,21 +218,6 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		54096A0CC612A83D0AD1189A /* [CP] Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "[CP] Copy Pods Resources";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-Todo/Pods-Todo-resources.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
 		EC2E7C2304A60E83DC1E44B7 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -265,6 +247,7 @@
 				"${BUILT_PRODUCTS_DIR}/FlowGraph/FlowGraph.framework",
 				"${BUILT_PRODUCTS_DIR}/GoogleToolboxForMac/GoogleToolboxForMac.framework",
 				"${BUILT_PRODUCTS_DIR}/Protobuf/Protobuf.framework",
+				"${BUILT_PRODUCTS_DIR}/SwiftChaining/SwiftChaining.framework",
 				"${BUILT_PRODUCTS_DIR}/gRPC/GRPCClient.framework",
 				"${BUILT_PRODUCTS_DIR}/gRPC-Core/grpc.framework",
 				"${BUILT_PRODUCTS_DIR}/gRPC-ProtoRPC/ProtoRPC.framework",
@@ -278,6 +261,7 @@
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/FlowGraph.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/GoogleToolboxForMac.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Protobuf.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/SwiftChaining.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/GRPCClient.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/grpc.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/ProtoRPC.framework",
@@ -301,7 +285,6 @@
 				1A69604C20E4F2C600D6096A /* TodoCloudController.swift in Sources */,
 				1A69604A20E4EE1F00D6096A /* CloudStore.swift in Sources */,
 				1A4AF9E220EA11E200357632 /* TodoTabBarController.swift in Sources */,
-				1A0740F020D7AD810043408D /* UBINotification.swift in Sources */,
 				1A2779A020D3A9730010188C /* AppDelegate.swift in Sources */,
 				1ACBA30A20D3B58A0024F845 /* TodoItem.swift in Sources */,
 				1A2EF08F20E615A200F447F4 /* EnumEnumerable.swift in Sources */,
@@ -460,7 +443,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "jp.objective-audio.Todo";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.0;
+				SWIFT_VERSION = 4.2;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -478,7 +461,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "jp.objective-audio.Todo";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.0;
+				SWIFT_VERSION = 4.2;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
