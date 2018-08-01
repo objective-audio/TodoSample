@@ -9,7 +9,7 @@
 import Foundation
 import FlowGraph
 import Firebase
-import SwiftChaining
+import Chaining
 
 class TodoCloudController {
     static let shared = TodoCloudController()

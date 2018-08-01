@@ -7,7 +7,7 @@
 //
 
 import UIKit
-import SwiftChaining
+import Chaining
 
 class TodoAddingCell: UITableViewCell {
     @IBOutlet weak var nameTextField: UITextField!

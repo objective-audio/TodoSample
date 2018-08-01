@@ -7,7 +7,7 @@
 //
 
 import UIKit
-import SwiftChaining
+import Chaining
 
 class TodoViewController: UITableViewController {
     enum Section: Int {
@@ -26,8 +26,8 @@ class TodoViewController: UITableViewController {
     
     var observer: AnyObserver?
     
-    var todoItems: [Holder<TodoItem>] {
-        return TodoCloudController.shared.todoItems.elements
+    var todoItems: ArrayHolder<Holder<TodoItem>> {
+        return TodoCloudController.shared.todoItems
     }
 
     override func viewDidLoad() {
@@ -39,11 +39,11 @@ class TodoViewController: UITableViewController {
             switch event {
             case .all:
                 self?.reloadAllCells()
-            case .inserted(_, let index):
+            case .inserted(let index, _):
                 self?.addCell(at: index)
-            case .removed(_, let index):
+            case .removed(let index, _):
                 self?.removeCell(at: index)
-            case .replaced(_, let index), .relayed(_, let index, _):
+            case .replaced(let index, _), .relayed(_, let index, _):
                 self?.reloadCell(at: index)
             }
         }).sync()

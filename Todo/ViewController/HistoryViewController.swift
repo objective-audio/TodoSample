@@ -7,14 +7,14 @@
 //
 
 import UIKit
-import SwiftChaining
+import Chaining
 
 class HistoryViewController: UITableViewController {
     let cellIdentifier: String = "HistoryCell"
     var observer: AnyObserver?
     
-    var historyItems: [HistoryItem] {
-        return TodoCloudController.shared.historyItems.elements
+    var historyItems: ArrayHolder<HistoryItem> {
+        return TodoCloudController.shared.historyItems
     }
     
     override func viewDidLoad() {
@@ -26,7 +26,7 @@ class HistoryViewController: UITableViewController {
             switch event {
             case .all:
                 self?.tableView.reloadData()
-            case .inserted(_, let index):
+            case .inserted(let index, _):
                 self?.tableView.insertRows(at: [IndexPath(row: index, section: 0)], with: .none)
             default:
                 break

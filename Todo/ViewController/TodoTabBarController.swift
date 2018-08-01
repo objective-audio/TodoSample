@@ -7,7 +7,7 @@
 //
 
 import UIKit
-import SwiftChaining
+import Chaining
 
 class TodoTabBarController: UITabBarController {
     private var pool = ObserverPool()

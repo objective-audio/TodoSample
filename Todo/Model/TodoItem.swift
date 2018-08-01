@@ -7,7 +7,7 @@
 //
 
 import Foundation
-import SwiftChaining
+import Chaining
 
 class TodoItem: Codable {
     let name: String

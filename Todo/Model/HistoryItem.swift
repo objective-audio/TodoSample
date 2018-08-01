@@ -7,7 +7,7 @@
 //
 
 import Foundation
-import SwiftChaining
+import Chaining
 
 class HistoryItem: Codable {
     let name: String
