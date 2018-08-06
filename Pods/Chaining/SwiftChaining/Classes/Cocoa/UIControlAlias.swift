@@ -4,13 +4,13 @@
 
 import UIKit
 
-final public class UIControlAlias: NSObject {
+final public class UIControlAlias<T: UIControl>: NSObject {
     public let core = SenderCore<UIControlAlias>()
     
     private weak var control: UIControl?
     private let events: UIControlEvents
     
-    public init(_ control: UIControl, events: UIControlEvents) {
+    public init(_ control: T, events: UIControlEvents) {
         self.control = control
         self.events = events
         
@@ -20,14 +20,21 @@ final public class UIControlAlias: NSObject {
     }
     
     deinit {
+        self.invalidate()
+    }
+    
+    public func invalidate() {
         self.control?.removeTarget(self, action: #selector(UIControlAlias.notify(_:)), for: self.events)
+        self.control = nil
     }
     
     @objc private func notify(_ sender: UIControl) {
-        self.core.broadcast(value: sender)
+        if let sender = sender as? T {
+            self.core.broadcast(value: sender)
+        }
     }
 }
 
 extension UIControlAlias: Sendable {
-    public typealias SendValue = UIControl
+    public typealias SendValue = T
 }
