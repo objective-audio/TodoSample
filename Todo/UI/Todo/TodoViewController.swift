@@ -28,10 +28,6 @@ class TodoViewController: UITableViewController {
     let controller = TodoController(inputPort: AppManager.shared.todoUseCase)
     
     var observer: AnyObserver?
-    
-    var todoItems: ImmutableArrayHolder<Holder<TodoItem>> {
-        return self.presenter.todoItems
-    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -61,7 +57,7 @@ class TodoViewController: UITableViewController {
         case .adding:
             return 1
         case .editing:
-            return self.todoItems.count
+            return self.presenter.todoItems.count
         }
     }
     
@@ -74,7 +70,7 @@ class TodoViewController: UITableViewController {
         case .adding:
             break
         case .editing:
-            let todoItem = self.todoItems.element(at: indexPath.row).value
+            let todoItem = self.presenter.todoItems.element(at: indexPath.row).value
             cell.textLabel?.text = todoItem.name
             cell.accessoryType = todoItem.isCompleted ? .checkmark : .none
         }
