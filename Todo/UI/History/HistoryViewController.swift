@@ -13,8 +13,10 @@ class HistoryViewController: UITableViewController {
     let cellIdentifier: String = "HistoryCell"
     var observer: AnyObserver?
     
-    var historyItems: ArrayHolder<HistoryItem> {
-        return TodoCloudController.shared.historyItems
+    let presenter = HistoryPresenter(outputPort: AppManager.shared.todoUseCase)
+    
+    var historyItems: ImmutableArrayHolder<HistoryItem> {
+        return self.presenter.historyItems
     }
     
     override func viewDidLoad() {
@@ -22,7 +24,7 @@ class HistoryViewController: UITableViewController {
         
         self.title = "History Items"
         
-        self.observer = TodoCloudController.shared.historyItems.chain().do({ [weak self] event in
+        self.observer = self.presenter.historyItems.chain().do({ [weak self] event in
             switch event {
             case .all:
                 self?.tableView.reloadData()
@@ -44,7 +46,7 @@ class HistoryViewController: UITableViewController {
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: self.cellIdentifier, for: indexPath)
-        cell.textLabel?.text = self.historyItems[indexPath.row].name
+        cell.textLabel?.text = self.historyItems.element(at: indexPath.row).name
         return cell
     }
 }

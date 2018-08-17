@@ -1,29 +1,14 @@
 //
-//  HistoryItem.swift
+//  HistoryItemTranslator.swift
 //  Todo
 //
-//  Created by yasoshima on 2018/06/15.
+//  Created by yasoshima on 2018/08/09.
 //  Copyright © 2018年 Yuki Yasoshima. All rights reserved.
 //
 
 import Foundation
-import Chaining
 
-class HistoryItem: Codable {
-    let name: String
-    let createdAt: Date
-    let completedAt: Date
-    
-    init(name: String, createdAt: Date, completedAt: Date, documentID: String) {
-        self.name = name
-        self.createdAt = createdAt
-        self.completedAt = completedAt
-    }
-    
-    static func addingFirebaseData(todoItem: TodoItem) -> [String: Any] {
-        return ["name": todoItem.name, "created_at": todoItem.createdAt, "completed_at": Date(), "is_deleted": false]
-    }
-    
+struct HistoryItemTranslator {
     static func item(from firebaseData: [String: Any], documentID: String) -> HistoryItem? {
         guard let name = firebaseData["name"] as? String else {
             return nil
@@ -39,8 +24,8 @@ class HistoryItem: Codable {
         
         return HistoryItem(name: name, createdAt: createdAt, completedAt: completedAt, documentID: documentID)
     }
-}
-
-extension HistoryItem: Relayable {
-    typealias SendValue = HistoryItem
+    
+    static func newFirebaseData(todoItem: TodoItem) -> [String: Any] {
+        return ["name": todoItem.name, "created_at": todoItem.createdAt, "completed_at": Date(), "is_deleted": false]
+    }
 }

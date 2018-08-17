@@ -24,10 +24,13 @@ class TodoViewController: UITableViewController {
         }
     }
     
+    let presenter = TodoPresenter(outputPort: AppManager.shared.todoUseCase)
+    let controller = TodoController(inputPort: AppManager.shared.todoUseCase)
+    
     var observer: AnyObserver?
     
-    var todoItems: ArrayHolder<Holder<TodoItem>> {
-        return TodoCloudController.shared.todoItems
+    var todoItems: ImmutableArrayHolder<Holder<TodoItem>> {
+        return self.presenter.todoItems
     }
 
     override func viewDidLoad() {
@@ -35,7 +38,7 @@ class TodoViewController: UITableViewController {
         
         self.title = "Todo Items"
         
-        self.observer = TodoCloudController.shared.todoItems.chain().do({ [weak self] event in
+        self.observer = self.presenter.todoItems.chain().do({ [weak self] event in
             switch event {
             case .all:
                 self?.reloadAllCells()
@@ -71,7 +74,7 @@ class TodoViewController: UITableViewController {
         case .adding:
             break
         case .editing:
-            let todoItem = self.todoItems[indexPath.row].value
+            let todoItem = self.todoItems.element(at: indexPath.row).value
             cell.textLabel?.text = todoItem.name
             cell.accessoryType = todoItem.isCompleted ? .checkmark : .none
         }
@@ -81,7 +84,7 @@ class TodoViewController: UITableViewController {
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         if case .editing = Section(rawValue: indexPath.section)! {
-            TodoCloudController.shared.toggleCompletedTodoItem(at: indexPath.row)
+            self.controller.toggleCompletedTodoItem(at: indexPath.row)
         }
     }
     
@@ -98,8 +101,7 @@ class TodoViewController: UITableViewController {
         let section = Section(rawValue: indexPath.section)!
         switch (section, editingStyle) {
         case (.editing, .delete):
-            TodoCloudController.shared.deleteTodoItem(at: indexPath.row)
-            break
+            self.controller.deleteTodoItem(at: indexPath.row)
         default:
             break
         }

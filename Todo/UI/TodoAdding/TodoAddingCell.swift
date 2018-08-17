@@ -16,37 +16,34 @@ class TodoAddingCell: UITableViewCell {
     var nameAlias: NotificationAlias!
     var pool = ObserverPool()
     
+    let presenter = TodoAddingPresenter(outputPort: AppManager.shared.todoUseCase)
+    let controller = TodoAddingController(inputPort: AppManager.shared.todoUseCase)
+    
     override func awakeFromNib() {
         super.awakeFromNib()
         
-        self.nameAlias = NotificationAlias(Notification.Name.UITextFieldTextDidChange, object: self.nameTextField)
+        self.pool += self.presenter.todoItemInsertedNotifier.chain().do({ [weak self] _ in
+            self?.endEditing(true)
+        }).end()
         
-        self.pool += TodoCloudController.shared.todoItems.chain().do({ [weak self] event in
-            switch event {
-            case .inserted:
-                self?.endEditing(true)
-            default:
-                // 何もしない
-                break
-            }
-        }).sync()
-        
-        self.pool += TodoCloudController.shared.addingName.chain().do({ [weak self] name in
+        self.pool += self.presenter.addingName.chain().do({ [weak self] name in
             self?.nameTextField.text = name
         }).sync()
         
-        self.pool += TodoCloudController.shared.canAddTodoItem.chain().do({ [weak self] canAdd in
+        self.pool += self.presenter.canAddTodoItem.chain().do({ [weak self] canAdd in
             self?.addButton.isEnabled = canAdd
         }).sync()
         
+        self.nameAlias = NotificationAlias(Notification.Name.UITextFieldTextDidChange, object: self.nameTextField)
+        
         self.pool += self.nameAlias.chain().do({ [weak self] event in
-            TodoCloudController.shared.addingNameChanged(self?.nameTextField.text)
+            self?.controller.addingNameChanged(self?.nameTextField.text)
         }).end()
     }
 
     @IBAction func add(sender: UIButton) {
         if let name = self.nameTextField.text {
-            TodoCloudController.shared.addTodoItem(name: name)
+            self.controller.addTodoItem(name: name)
         }
     }
 }
@@ -56,7 +53,7 @@ extension TodoAddingCell: UITextFieldDelegate {
         self.endEditing(true)
         
         if let name = textField.text {
-            TodoCloudController.shared.addTodoItem(name: name)
+            self.controller.addTodoItem(name: name)
         }
         
         return true
@@ -64,7 +61,7 @@ extension TodoAddingCell: UITextFieldDelegate {
     
     func textFieldShouldClear(_ textField: UITextField) -> Bool {
         textField.text = ""
-        TodoCloudController.shared.addingNameChanged(textField.text)
+        self.controller.addingNameChanged(textField.text)
         self.endEditing(true)
         
         return false

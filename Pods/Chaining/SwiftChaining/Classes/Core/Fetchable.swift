@@ -5,12 +5,14 @@
 import Foundation
 
 public protocol Fetchable: Sendable {
-    func fetchedValue() -> SendValue
+    func fetchedValue() -> SendValue?
 }
 
 extension Fetchable {
     public func fetch(for joint: AnyJoint) {
-        self.core.send(value: self.fetchedValue(), to: joint)
+        if let fetched = self.fetchedValue() {
+            self.core.send(value: fetched, to: joint)
+        }
     }
 }
 
@@ -20,13 +22,19 @@ extension Fetchable where SendValue: Sendable {
     
     public func relayedChain() -> RelayingFetcherChain {
         if self.core.relaySender == nil {
-            let fetcher = RelayingFetcher() { [weak self] in return .current(self!.fetchedValue()) }
+            let fetcher = RelayingFetcher() { [weak self] in
+                if let fetched = self?.fetchedValue() {
+                    return .current(fetched)
+                } else {
+                    return nil
+                }
+            }
             self.core.relaySender = fetcher
             self.core.relayObserver = self.chain().do({ [weak self] value in
                 fetcher.broadcast(value: .current(value))
                 
                 self?.core.relayValueObserver = value.chain().do({ value in
-                    fetcher.core.broadcast(value: .relayed(value))
+                    fetcher.broadcast(value: .relayed(value))
                 }).end()
             }).sync()
         }
@@ -40,13 +48,19 @@ extension Fetchable where SendValue: Sendable {
 extension Fetchable where SendValue: Fetchable {
     public func relayedChain() -> RelayingFetcherChain {
         if self.core.relaySender == nil {
-            let fetcher = RelayingFetcher() { [weak self] in return .current(self!.fetchedValue()) }
+            let fetcher = RelayingFetcher() { [weak self] in
+                if let fetched = self?.fetchedValue() {
+                    return .current(fetched)
+                } else {
+                    return nil
+                }
+            }
             self.core.relaySender = fetcher
             self.core.relayObserver = self.chain().do({ [weak self] value in
                 fetcher.broadcast(value: .current(value))
                 
                 self?.core.relayValueObserver = value.chain().do({ value in
-                    fetcher.core.broadcast(value: .relayed(value))
+                    fetcher.broadcast(value: .relayed(value))
                 }).sync()
             }).sync()
         }

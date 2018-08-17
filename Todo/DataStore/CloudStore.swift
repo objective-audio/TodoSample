@@ -9,20 +9,15 @@
 import Foundation
 import FirebaseFirestore
 
-enum Result<T> {
-    case success(T)
-    case failed(Error)
-}
-
-class CloudStore {
-    static func addTodoItem(name: String, completion: @escaping (Result<TodoItem>) -> Void) {
+class CloudStore: DataStoreGateway {
+    func addTodoItem(name: String, completion: @escaping (Result<TodoItem>) -> Void) {
         var ref: DocumentReference? = nil
-        let data = TodoItem.addingFirebaseData(name: name)
+        let data = TodoItemTranslator.newFirebaseData(name: name)
         
         ref = Firestore.firestore().collection("todo_items").addDocument(data: data) { err in
             if let err = err {
                 completion(.failed(err))
-            } else if let item = TodoItem.item(from: data, documentID: ref!.documentID) {
+            } else if let item = TodoItemTranslator.item(from: data, documentID: ref!.documentID) {
                 completion(.success(item))
             } else {
                 fatalError()
@@ -30,8 +25,8 @@ class CloudStore {
         }
     }
     
-    static func delete(todoItem: TodoItem, completion: @escaping (Result<Void>) -> Void) {
-        self.editTodoItem(documentID: todoItem.documentID, data: todoItem.firebaseData(isDeleted: true)) { result in
+    func delete(todoItem: TodoItem, completion: @escaping (Result<Void>) -> Void) {
+        self.editTodoItem(documentID: todoItem.documentID, data: TodoItemTranslator.firebaseData(from: todoItem, isDeleted: true)) { result in
             switch result {
             case .success:
                 completion(.success(()))
@@ -41,15 +36,15 @@ class CloudStore {
         }
     }
     
-    static func toggle(todoItem: TodoItem, completion: @escaping (Result<TodoItem>) -> Void) {
-        self.editTodoItem(documentID: todoItem.documentID, data: todoItem.firebaseData(toggleCompleted: true), completion: completion)
+    func toggle(todoItem: TodoItem, completion: @escaping (Result<TodoItem>) -> Void) {
+        self.editTodoItem(documentID: todoItem.documentID, data: TodoItemTranslator.firebaseData(from: todoItem, toggleCompleted: true), completion: completion)
     }
     
-    static private func editTodoItem(documentID: String, data: [String: Any], completion: @escaping (Result<TodoItem>) -> Void) {
+    private func editTodoItem(documentID: String, data: [String: Any], completion: @escaping (Result<TodoItem>) -> Void) {
         Firestore.firestore().collection("todo_items").document(documentID).setData(data) { err in
             if let err = err {
                 completion(.failed(err))
-            } else if let item = TodoItem.item(from: data, documentID: documentID) {
+            } else if let item = TodoItemTranslator.item(from: data, documentID: documentID) {
                 completion(.success(item))
             } else {
                 fatalError()
@@ -57,12 +52,12 @@ class CloudStore {
         }
     }
     
-    static func todoItems(completion: @escaping (Result<[TodoItem]>) -> Void) {
+    func todoItems(completion: @escaping (Result<[TodoItem]>) -> Void) {
         Firestore.firestore().collection("todo_items").whereField("is_deleted", isEqualTo: false).order(by: "created_at", descending: true).getDocuments() { (querySnapshot, err) in
             if let err = err {
                 completion(.failed(err))
             } else if let querySnapshot = querySnapshot {
-                let items = querySnapshot.documents.compactMap { TodoItem.item(from: $0.data(), documentID: $0.documentID) }
+                let items = querySnapshot.documents.compactMap { TodoItemTranslator.item(from: $0.data(), documentID: $0.documentID) }
                 completion(.success(items))
             } else {
                 completion(.success([]))
@@ -70,14 +65,14 @@ class CloudStore {
         }
     }
     
-    static func addHistoryItem(from todoItem: TodoItem, completion: @escaping (Result<HistoryItem>) -> Void) {
+    func addHistoryItem(from todoItem: TodoItem, completion: @escaping (Result<HistoryItem>) -> Void) {
         var ref: DocumentReference? = nil
-        let data = HistoryItem.addingFirebaseData(todoItem: todoItem)
+        let data = HistoryItemTranslator.newFirebaseData(todoItem: todoItem)
         
         ref = Firestore.firestore().collection("history_items").addDocument(data: data) { err in
             if let err = err {
                 completion(.failed(err))
-            } else if let item = HistoryItem.item(from: data, documentID: ref!.documentID) {
+            } else if let item = HistoryItemTranslator.item(from: data, documentID: ref!.documentID) {
                 completion(.success(item))
             } else {
                 fatalError()
@@ -85,12 +80,12 @@ class CloudStore {
         }
     }
     
-    static func historyItems(completion: @escaping (Result<[HistoryItem]>) -> Void) {
+    func historyItems(completion: @escaping (Result<[HistoryItem]>) -> Void) {
         Firestore.firestore().collection("history_items").whereField("is_deleted", isEqualTo: false).order(by: "completed_at", descending: true).getDocuments { (querySnapshot, err) in
             if let err = err {
                 completion(.failed(err))
             } else if let querySnapshot = querySnapshot {
-                let items = querySnapshot.documents.compactMap { HistoryItem.item(from: $0.data(), documentID: $0.documentID) }
+                let items = querySnapshot.documents.compactMap { HistoryItemTranslator.item(from: $0.data(), documentID: $0.documentID) }
                 completion(.success(items))
             } else {
                 completion(.success([]))

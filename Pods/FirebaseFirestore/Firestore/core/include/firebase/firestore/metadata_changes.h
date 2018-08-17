@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Google
+ * Copyright 2018 Google
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,22 @@
  * limitations under the License.
  */
 
-#import <Foundation/Foundation.h>
+#ifndef FIRESTORE_CORE_INCLUDE_FIREBASE_FIRESTORE_METADATA_CHANGES_H_
+#define FIRESTORE_CORE_INCLUDE_FIREBASE_FIRESTORE_METADATA_CHANGES_H_
 
-#import "Firestore/Source/Local/FSTGarbageCollector.h"
-
-NS_ASSUME_NONNULL_BEGIN
+namespace firebase {
+namespace firestore {
 
 /**
- * A garbage collector implementation that does absolutely nothing. It ignores all
- * addGarbageSource: and addPotentialGarbageKey: messages and never produces any garbage.
+ * Indicates whether metadata-only changes (i.e. only {@code
+ * DocumentSnapshot.getMetadata()} or
+ * {@code Query.getMetadata()} changed) should trigger snapshot events.
  */
-@interface FSTNoOpGarbageCollector : NSObject <FSTGarbageCollector>
-@end
+enum class MetadataChanges {
+  kExclude,
+  kInclude,
+};
 
-NS_ASSUME_NONNULL_END
+}  // namespace firestore
+}  // namespace firebase
+#endif  // FIRESTORE_CORE_INCLUDE_FIREBASE_FIRESTORE_METADATA_CHANGES_H_

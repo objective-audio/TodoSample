@@ -4,7 +4,37 @@
 
 import Foundation
 
-final public class ArrayHolder<Element: Relayable> {
+public class ImmutableArrayHolder<Element: Relayable> {
+    public let core = SenderCore<ArrayHolder<Element>>()
+    
+    public fileprivate(set) var rawArray: [Element] = []
+    
+    public var count: Int { return self.rawArray.count }
+    
+    fileprivate init() {}
+    
+    public func element(at index: Int) -> Element {
+        return self.rawArray[index]
+    }
+    
+    public var capacity: Int {
+        return self.rawArray.capacity
+    }
+    
+    public var first: Element? {
+        return self.rawArray.first
+    }
+    
+    public var last: Element? {
+        return self.rawArray.last
+    }
+    
+    public func chain() -> ArrayHolder<Element>.SenderChain {
+        return Chain(joint: self.core.addJoint(sender: self as! ArrayHolder<Element>), handler: { $0 })
+    }
+}
+
+final public class ArrayHolder<Element: Relayable>: ImmutableArrayHolder<Element> {
     public enum Event {
         case all([Element])
         case inserted(at: Int, element: Element)
@@ -13,23 +43,13 @@ final public class ArrayHolder<Element: Relayable> {
         case relayed(Element.SendValue, at: Int, element: Element)
     }
     
-    public let core = SenderCore<ArrayHolder>()
-    
-    private class ElementPair {
-        let element: Element
+    private class ObserverWrapper {
         var observer: AnyObserver?
-        
-        init(_ element: Element) {
-            self.element = element
-        }
     }
     
-    public var rawArray: [Element] { return self.pairArray.map { $0.element } }
-    private var pairArray: [ElementPair] = []
+    private var observerArray: [ObserverWrapper] = []
     
-    public var count: Int { return self.pairArray.count }
-    
-    public init() {}
+    public override init() {}
     
     public convenience init(_ elements: [Element]) {
         self.init()
@@ -46,7 +66,7 @@ final public class ArrayHolder<Element: Relayable> {
     }
     
     public func append(_ element: Element) {
-        let index = self.pairArray.count
+        let index = self.rawArray.count
         self.insert(element, at: index)
     }
     
@@ -56,47 +76,34 @@ final public class ArrayHolder<Element: Relayable> {
     
     @discardableResult
     public func remove(at index: Int) -> Element {
-        let pair = self.pairArray.remove(at: index)
+        let wrapper = self.observerArray.remove(at: index)
         
-        if let observer = pair.observer {
+        if let observer = wrapper.observer {
             observer.invalidate()
         }
         
-        self.core.broadcast(value: .removed(at: index, element: pair.element))
+        let element = self.rawArray.remove(at: index)
         
-        return pair.element
+        self.core.broadcast(value: .removed(at: index, element: element))
+        
+        return element
     }
     
     public func removeAll(keepingCapacity keepCapacity: Bool = false) {
-        for pair in self.pairArray {
-            if let observer = pair.observer {
+        for wrapper in self.observerArray {
+            if let observer = wrapper.observer {
                 observer.invalidate()
             }
         }
         
-        self.pairArray.removeAll(keepingCapacity: keepCapacity)
+        self.observerArray.removeAll(keepingCapacity: keepCapacity)
+        self.rawArray.removeAll(keepingCapacity: keepCapacity)
         
         self.core.broadcast(value: .all([]))
     }
     
-    public func element(at index: Int) -> Element {
-        return self.pairArray[index].element
-    }
-    
     public func reserveCapacity(_ capacity: Int) {
-        self.pairArray.reserveCapacity(capacity)
-    }
-    
-    public var capacity: Int {
-        return self.pairArray.capacity
-    }
-    
-    public var first: Element? {
-        return self.pairArray.first?.element
-    }
-    
-    public var last: Element? {
-        return self.pairArray.last?.element
+        self.rawArray.reserveCapacity(capacity)
     }
     
     public subscript(index: Int) -> Element {
@@ -106,28 +113,42 @@ final public class ArrayHolder<Element: Relayable> {
 }
 
 extension ArrayHolder /* private */ {
-    private typealias ChainingHandler = (ElementPair) -> Void
+    private typealias ChainingHandler = (Element, ObserverWrapper) -> Void
     
     private func insert(element: Element, at index: Int, chaining: ChainingHandler?) {
-        let pair = ElementPair(element)
-        chaining?(pair)
-        self.pairArray.insert(pair, at: index)
+        let wrapper = ObserverWrapper()
+        chaining?(element, wrapper)
+        self.observerArray.insert(wrapper, at: index)
+        self.rawArray.insert(element, at: index)
         self.core.broadcast(value: .inserted(at: index, element: element))
     }
     
     private func replace(_ elements: [Element], chaining: ChainingHandler?) {
-        self.pairArray = elements.enumerated().map {
-            let pair = ElementPair($0.1)
-            chaining?(pair)
-            return pair
+        for wrapper in self.observerArray {
+            if let observer = wrapper.observer {
+                observer.invalidate()
+            }
         }
+        
+        self.observerArray.removeAll()
+        self.rawArray.removeAll()
+        
+        for element in elements {
+            let wrapper = ObserverWrapper()
+            chaining?(element, wrapper)
+            self.observerArray.append(wrapper)
+        }
+        
+        self.rawArray = elements
+        
         self.core.broadcast(value: .all(elements))
     }
     
     private func replace(_ element: Element, at index: Int, chaining: ChainingHandler?) {
-        let pair = ElementPair(element)
-        chaining?(pair)
-        self.pairArray.replaceSubrange(index...index, with: [pair])
+        let wrapper = ObserverWrapper()
+        chaining?(element, wrapper)
+        self.observerArray.replaceSubrange(index...index, with: [wrapper])
+        self.rawArray.replaceSubrange(index...index, with: [element])
         self.core.broadcast(value: .replaced(at: index, element: element))
     }
 }
@@ -135,7 +156,7 @@ extension ArrayHolder /* private */ {
 extension ArrayHolder: Fetchable {
     public typealias SendValue = Event
     
-    public func fetchedValue() -> SendValue {
+    public func fetchedValue() -> SendValue? {
         return .all(self.rawArray)
     }
 }
@@ -158,7 +179,7 @@ extension ArrayHolder where Element: Sendable {
     }
     
     public func append(_ element: Element) {
-        let index = self.pairArray.count
+        let index = self.rawArray.count
         self.insert(element, at: index)
     }
     
@@ -172,11 +193,11 @@ extension ArrayHolder where Element: Sendable {
     }
     
     private func elementChaining() -> ChainingHandler {
-        return { (pair: ElementPair) in
-            pair.observer = pair.element.chain().do({ [weak self, weak pair] value in
-                if let sself = self, let pair = pair {
-                    if let index = sself.pairArray.index(where: { return ObjectIdentifier($0) == ObjectIdentifier(pair) }) {
-                        sself.core.broadcast(value: .relayed(value, at: index, element: sself.pairArray[index].element))
+        return { (element: Element, wrapper: ObserverWrapper) in
+            wrapper.observer = element.chain().do({ [weak self, weak wrapper] value in
+                if let sself = self, let wrapper = wrapper {
+                    if let index = sself.observerArray.index(where: { return ObjectIdentifier($0) == ObjectIdentifier(wrapper) }) {
+                        sself.core.broadcast(value: .relayed(value, at: index, element: sself.rawArray[index]))
                     }
                 }
             }).end()

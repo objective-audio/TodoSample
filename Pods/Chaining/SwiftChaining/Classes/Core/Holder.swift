@@ -4,11 +4,22 @@
 
 import Foundation
 
-final public class Holder<T> {
-    public let core = SenderCore<Holder>()
-    private let lock = NSLock()
+public class ImmutableHolder<T> {
+    public let core = SenderCore<Holder<T>>()
     
-//    public private(set) var value: SendValue
+    public fileprivate(set) var rawValue: T
+    
+    fileprivate init(_ initial: T) {
+        self.rawValue = initial
+    }
+    
+    public func chain() -> Holder<T>.SenderChain {
+        return Chain(joint: self.core.addJoint(sender: self as! Holder<T>), handler: { $0 })
+    }
+}
+
+final public class Holder<T>: ImmutableHolder<T> {
+    private let lock = NSLock()
     
     public var value: SendValue {
         set {
@@ -21,17 +32,15 @@ final public class Holder<T> {
         get { return self.rawValue }
     }
     
-    private var rawValue: SendValue
-    
-    public init(_ initial: T) {
-        self.rawValue = initial
+    public override init(_ initial: T) {
+        super.init(initial)
     }
 }
 
 extension Holder: Fetchable {
     public typealias SendValue = T
     
-    public func fetchedValue() -> SendValue {
+    public func fetchedValue() -> SendValue? {
         return self.value
     }
 }
